@@ -1,9 +1,9 @@
-﻿using Rocket.RocketAPI;
+﻿using Rocket.API;
 
 
 namespace ApokPT.RocketPlugins
 {
-    public class AntiKOSConfiguration : RocketConfiguration
+    public class AntiKOSConfiguration : IRocketPluginConfiguration
     {
 
         public bool Enabled;
@@ -12,8 +12,8 @@ namespace ApokPT.RocketPlugins
         public bool NoEquipedWeapons;
         public byte MaxWarnings;
         public bool ResetWarningsAfterExecute;
-        
-        public RocketConfiguration DefaultConfiguration
+
+        public IRocketPluginConfiguration DefaultConfiguration
         {
             get
             {

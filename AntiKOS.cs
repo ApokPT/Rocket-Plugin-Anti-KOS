@@ -1,10 +1,11 @@
-﻿using Rocket.Logging;
-using Rocket.RocketAPI;
-using Rocket.RocketAPI.Events;
+﻿using Rocket.Unturned;
+using Rocket.Unturned.Enumerations;
+using Rocket.Unturned.Events;
+using Rocket.Unturned.Logging;
+using Rocket.Unturned.Player;
+using Rocket.Unturned.Plugins;
 using SDG;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace ApokPT.RocketPlugins
 {
@@ -20,9 +21,9 @@ namespace ApokPT.RocketPlugins
         {
             Instance = this;
             if (!Configuration.Enabled) return;
-            Rocket.RocketAPI.Events.RocketPlayerEvents.OnPlayerDeath += RocketPlayerEvents_OnPlayerDeath;
+            RocketPlayerEvents.OnPlayerDeath += RocketPlayerEvents_OnPlayerDeath;
         }
-                
+
         private void RocketPlayerEvents_OnPlayerDeath(RocketPlayer player, EDeathCause cause, ELimb limb, Steamworks.CSteamID murderer)
         {
             switch (cause)
@@ -76,9 +77,9 @@ namespace ApokPT.RocketPlugins
                 return;
             }
 
-            
-
         }
+
+
 
         private void CheckWarnings(RocketPlayer player, RocketPlayer killer)
         {
@@ -93,29 +94,28 @@ namespace ApokPT.RocketPlugins
 
                     if (killerWarnings == Configuration.MaxWarnings - 1)
                     {
-                        if (Configuration.ResetWarningsAfterExecute)
-                            Warnings.Remove(klStr);
-                            Execute(player, killer);
+                        if (Configuration.ResetWarningsAfterExecute) Warnings.Remove(klStr);
+                        Execute(player, killer);
                     }
                     else if (killerWarnings + 1 == Configuration.MaxWarnings - 1)
                     {
                         Warnings[klStr] += 1;
                         Logger.Log(killer.CharacterName + " warned " + Warnings[klStr] + "/" + Configuration.MaxWarnings + " time(s) for KOS!");
-                        RocketChatManager.Say(killer, AntiKOS.Instance.Translate("antikos_warning_last"));
+                        RocketChat.Say(killer, AntiKOS.Instance.Translate("antikos_warning_last"));
                     }
                     else
                     {
                         Warnings[klStr] += 1;
                         Logger.Log(killer.CharacterName + " warned " + Warnings[klStr] + "/" + Configuration.MaxWarnings + " time(s) for KOS!");
-                        RocketChatManager.Say(killer, AntiKOS.Instance.Translate("antikos_warning", Warnings[klStr], Configuration.MaxWarnings));
-                        
+                        RocketChat.Say(killer, AntiKOS.Instance.Translate("antikos_warning", Warnings[klStr], Configuration.MaxWarnings));
+
                     }
                 }
                 else
                 {
                     Warnings.Add(klStr, 1);
                     Logger.Log(killer.CharacterName + " warned " + Warnings[klStr] + "/" + Configuration.MaxWarnings + " time(s) for KOS!");
-                    RocketChatManager.Say(killer, AntiKOS.Instance.Translate("antikos_warning", Warnings[klStr], Configuration.MaxWarnings));
+                    RocketChat.Say(killer, AntiKOS.Instance.Translate("antikos_warning", Warnings[klStr], Configuration.MaxWarnings));
                 }
             }
             else
@@ -126,10 +126,11 @@ namespace ApokPT.RocketPlugins
 
         private void Execute(RocketPlayer player, RocketPlayer killer)
         {
-            Logger.Log(killer.CharacterName + " was executed for KOS!");
-            RocketChatManager.Say(AntiKOS.Instance.Translate("antikos_executed", killer.CharacterName));
-            RocketChatManager.Say(player, AntiKOS.Instance.Translate("antikos_execute"));
-            killer.Damage(255, player.Position, EDeathCause.PUNCH, ELimb.SKULL, killer.CSteamID);
+            Logger.Log(killer.CharacterName + " was striped for KOS!");
+            RocketChat.Say(AntiKOS.Instance.Translate("antikos_executed", killer.CharacterName));
+            RocketChat.Say(player, AntiKOS.Instance.Translate("antikos_execute"));
+            killer.Inventory.Clear();
+            //killer.Damage(255, player.Position, EDeathCause.PUNCH, ELimb.SKULL, killer.CSteamID);
         }
 
         // Translations
@@ -141,8 +142,8 @@ namespace ApokPT.RocketPlugins
                 return new Dictionary<string, string>(){
                     {"antikos_warning","ANTI-KOS : This is your {0}# warning of {1}!"},
                     {"antikos_warning_last","ANTI-KOS : This is your last warning, next KOS will kill you!"},
-                    {"antikos_executed","ANTI-KOS : {0} have been executed for KOS!"},
-                    {"antikos_execute","ANTI-KOS : Your killer has been executed for KOS!"}
+                    {"antikos_executed","ANTI-KOS : {0} have been striped of all items for KOS!"},
+                    {"antikos_execute","ANTI-KOS : Your killer has been striped of all items for KOS!"}
                 };
             }
         }
